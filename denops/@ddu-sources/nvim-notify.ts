@@ -1,6 +1,7 @@
 import { Denops } from "https://deno.land/x/denops_core@v5.0.0/mod.ts";
 import { BaseSource, Item } from "https://deno.land/x/ddu_vim@v3.4.5/types.ts";
 import { ActionData, Notification } from "../@ddu-kinds/nvim-notify.ts";
+import * as fn from "https://deno.land/x/denops_std@v5.0.1/function/mod.ts";
 
 type Params = Record<string, never>;
 
@@ -19,10 +20,14 @@ export class Source extends BaseSource<Params> {
         )) as Array<Notification>;
 
         for (const log of logs) {
+          const time = log.title[1];
+          const title = log.title[0];
+          const iconWidth = await fn.strlen(args.denops, log.icon);
+
           const timeCol = 1;
-          const titleCol = timeCol + log.title[1].length + 1;
-          const iconCol = titleCol + log.title[0].length + 1;
-          const levelCol = iconCol + log.icon.length + 3;
+          const titleCol = timeCol + time.length + 1;
+          const iconCol = titleCol + title.length + 1;
+          const levelCol = iconCol + iconWidth + 1;
           const messageCol = levelCol + log.level.length + 1;
 
           controller.enqueue([
@@ -35,7 +40,7 @@ export class Source extends BaseSource<Params> {
                   name: "Time",
                   hl_group: "NotifyLogTime",
                   col: timeCol,
-                  width: log.title[1].length,
+                  width: time.length + 1,
                 },
                 {
                   name: "Title",
@@ -47,7 +52,7 @@ export class Source extends BaseSource<Params> {
                   name: "Icon",
                   hl_group: `Notify${log.level}Title`,
                   col: iconCol,
-                  width: log.icon.length,
+                  width: iconWidth,
                 },
                 {
                   name: "Level",
